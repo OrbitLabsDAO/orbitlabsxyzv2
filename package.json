@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "dotenv": "^16.4.5",
     "gray-matter": "^4.0.3",
     "nunjucks": "^3.2.4"
   }
