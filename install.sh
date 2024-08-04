@@ -1,1 +1,0 @@
-echo "pulling git repo"
