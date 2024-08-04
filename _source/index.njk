@@ -1,1 +1,320 @@
-yay
+---
+layout: layout
+---
+
+<div class="tron-grid">
+  <canvas id="grid-canvas" class="canvas"></canvas>
+  <script
+    type="text/javascript"
+    src="https://cdn.jsdelivr.net/npm/three@0.117.1/examples/js/shaders/CopyShader.js"
+  ></script>
+  <script
+    type="text/javascript"
+    src="https://cdn.jsdelivr.net/npm/three@0.117.1/examples/js/postprocessing/ShaderPass.js"
+  ></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.117.1/examples/js/postprocessing/EffectComposer.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.117.1/examples/js/postprocessing/RenderPass.js"></script>
+  <script>
+    "use strict";
+    //import * as THREE from "three/build/three.module";
+    //import * as TWEEN from "@tweenjs/tween.js";
+    // Imports for Postprocessing effects
+    //import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer";
+    //import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass";
+    let renderer = null,
+      materialShaders = null,
+      mouse = null,
+      target = null,
+      clock = null,
+      time = 0,
+      canvasWidth = null,
+      canvasHeight = null,
+      scene = null,
+      camera = null;
+
+    let currentWidth = 0,
+      currentHeight = 0,
+      resizeCanvas = false;
+
+    var GridScene = function (canvas, color, cameraHeight, cameraFoV) {
+      this.canvas = canvas;
+      // Material array for storing shaders
+      this.materialShaders = [];
+      // Variables for the Mouse
+      this.mouse = new THREE.Vector2();
+      this.target = new THREE.Vector2();
+      // Create the Clock
+      this.clock = new THREE.Clock();
+      this.time = 0;
+      //this.isResizable = (canvasWidth === 0);
+      this.canvasWidth = this.canvas.clientWidth;
+      this.canvasHeight = this.canvas.clientHeight;
+      // Setup the Renderer
+      this.renderer = new THREE.WebGLRenderer({
+        canvas: document.getElementById("grid-canvas"),
+        powerPreference: "low-power",
+        failIfMajorPerformanceCaveat: true,
+      });
+      this.renderer.setPixelRatio(window.devicePixelRatio);
+      this.renderer.setSize(this.canvasWidth, window.outerHeight);
+      this.renderer.domElement.id = "grid-canvas";
+      // Create the scene
+      this.scene = new THREE.Scene();
+      this.scene.fog = new THREE.FogExp2(color, 0.0025);
+      this.scene.background = new THREE.Color(color);
+      // Create the camera
+      this.camera = new THREE.PerspectiveCamera(
+        cameraFoV,
+        this.canvasWidth / window.outerHeight,
+        1,
+        700
+      );
+      this.camera.position.set(0, cameraHeight, 7);
+      this.scene.add(this.camera);
+    };
+    /**
+     * Prepare the scene. Use this method to simplify GridScene setup
+     */
+    GridScene.prototype.prepareScene = function (color, animationSpeed) {
+      this.setPostProcessing();
+      this.addFloor(color, animationSpeed);
+      this.animate();
+
+      this.resizeFunction();
+      window.addEventListener("resize", () => {
+        if (this.width !== currentWidth || this.height !== currentHeight) {
+          this.resizeCanvas = true;
+        }
+      });
+    };
+    /**
+     * Rotate the camera to look at t
+     * @param {*} rotX
+     * @param {*} rotY
+     * @param {*} rotZ
+     * @param {*} duration
+     */
+    GridScene.prototype.cameraSceneTransition = function (
+      rotX,
+      rotY,
+      rotZ,
+      duration = 650
+    ) {
+      this.moveAndLookAt(
+        this.camera,
+        new THREE.Vector3(0, 30, 0),
+        new THREE.Vector3(rotX, rotY, rotZ),
+        { duration: duration }
+      );
+    };
+    /**
+     * Event listener to adjust scene width/height according to window size
+     */
+    GridScene.prototype.resizeFunction = function () {
+      if (this.renderer && this.composer && this.camera) {
+        try {
+          this.resizeCanvas = false;
+          this.canvasWidth = this.canvas.clientWidth;
+          this.canvasHeight = this.canvas.clientHeight;
+          this.width = this.canvasWidth;
+          this.height = this.canvasHeight;
+          this.camera.aspect = this.width / this.height;
+          this.camera.updateProjectionMatrix();
+          this.renderer.setSize(this.canvasWidth, this.canvasHeight);
+          this.composer.setSize(this.canvasWidth, this.canvasHeight);
+        } catch (e) {
+          console.log(e);
+        }
+      }
+    };
+    /**
+     * Enable all post-processing effects
+     */
+    GridScene.prototype.setPostProcessing = function () {
+      // The Render Pass
+      this.renderScene = new THREE.RenderPass(this.scene, this.camera);
+      // The Bloom Pass
+      this.renderer.toneMapping = THREE.ReinhardToneMapping; // Necessary for bloom pass (or it gets overexposed), other options available (but all overexposed by default)
+      this.renderer.toneMappingExposure = Math.pow(1, 8.0);
+      // Postprocessing Composer, merges all postprocessing effects
+      this.composer = new THREE.EffectComposer(this.renderer);
+      this.composer.addPass(this.renderScene);
+    };
+    /**
+     * Add the Grid to the scene
+     * @param {*} color
+     * @param {*} animationSpeed
+     */
+    GridScene.prototype.addFloor = function (color, animationSpeed) {
+      let floorGeometry = new THREE.PlaneBufferGeometry(50000, 5000, 0, 0);
+      floorGeometry.translate(0, 110, 0);
+      floorGeometry.rotateX(-Math.PI * 0.5);
+      let floorMaterial = new THREE.MeshBasicMaterial({
+        color: color,
+        transparent: false,
+      });
+      this.createGridMaterial(floorMaterial, animationSpeed);
+      // Add floor to scene
+      this.grid = new THREE.Mesh(floorGeometry, floorMaterial);
+      this.scene.add(this.grid);
+    };
+    /**
+     * Create the Grid material
+     * @param {*} materialVar
+     * @param {*} animationSpeed
+     */
+    GridScene.prototype.createGridMaterial = function (
+      materialVar,
+      animationSpeed
+    ) {
+      materialVar.onBeforeCompile = (shader) => {
+        shader.uniforms.speed = {
+          value: animationSpeed,
+        };
+        shader.uniforms.time = {
+          value: 0,
+        };
+        shader.vertexShader =
+          `
+              uniform float speed;
+        uniform float time;
+        varying vec3 vPos;
+              ` + shader.vertexShader;
+        shader.vertexShader = shader.vertexShader.replace(
+          `#include <begin_vertex>`,
+          `#include <begin_vertex>
+          vec2 tuv = uv;
+          float t = time * 0.001 * speed;
+          vPos = transformed;
+          `
+        );
+        shader.fragmentShader =
+          `
+        #extension GL_OES_standard_derivatives : enable
+              uniform float speed;
+        uniform float time;
+        varying vec3 vPos;
+        float line(vec3 position, float width, vec3 step){
+          vec3 tempCoord = position / step;
+          vec2 coord = tempCoord.xz;
+          coord.y -= time * speed / 2.;
+          vec2 grid = abs(fract(coord - 0.5) - 0.5) / fwidth(coord * width);
+          float line = min(grid.x, grid.y);
+          return min(line, 1.0);
+        }
+              ` + shader.fragmentShader;
+        shader.fragmentShader = shader.fragmentShader.replace(
+          `gl_FragColor = vec4( outgoingLight, diffuseColor.a );`,
+          `
+          float l = line(vPos, 1.0, vec3(24.0)); // grid line width
+          vec3 base = mix(vec3(0, 0.5, 0), vec3(0), smoothstep(0., 0., abs(vPos.x)));
+          vec3 c = mix(outgoingLight, base, l);
+          gl_FragColor = vec4(c, diffuseColor.a);
+          `
+        );
+        this.materialShaders.push(shader);
+      };
+    };
+    /**
+     * Moves the camera and rotates it to look at a specified point
+     * @param {*} camera
+     * @param {*} targetPos
+     * @param {*} targetLookAt
+     * @param {*} options
+     */
+    GridScene.prototype.moveAndLookAt = function (
+      camera,
+      targetPos,
+      targetLookAt,
+      options
+    ) {
+      options || (options = { duration: 300 });
+      var originalPos = new THREE.Vector3().copy(camera.position);
+      var originalRot = new THREE.Euler().copy(camera.rotation);
+      camera.position.set(targetPos.x, targetPos.y, targetPos.z);
+      camera.lookAt(targetLookAt);
+      var targetRotation = new THREE.Euler().copy(camera.rotation);
+      camera.position.set(originalPos.x, originalPos.y, originalPos.z);
+      camera.rotation.set(originalRot.x, originalRot.y, originalRot.z);
+      new TWEEN.Tween(camera.position)
+        .to(
+          {
+            x: targetPos.x,
+            y: targetPos.y,
+            z: targetPos.z,
+          },
+          options.duration
+        )
+        .start();
+      (function () {
+        var qa = new THREE.Quaternion().copy(camera.quaternion);
+        var qb = new THREE.Quaternion().setFromEuler(targetRotation);
+        var qm = new THREE.Quaternion();
+        var o = { t: 0 };
+        new TWEEN.Tween(o)
+          .to({ t: 1 }, options.duration)
+          .onUpdate(function () {
+            THREE.Quaternion.slerp(qa, qb, qm, o.t);
+            camera.quaternion.set(qm.x, qm.y, qm.z, qm.w);
+          })
+          .start();
+      }).call(this);
+    };
+    /*
+     * Scenes animation loop
+     */
+    var now,
+      delta,
+      then = Date.now();
+    var interval = 1000 / 30;
+    GridScene.prototype.animate = function () {
+      requestAnimationFrame(this.animate.bind(this));
+      now = Date.now();
+      delta = now - then;
+      TWEEN.update();
+      if (delta > interval) {
+        this.time += this.clock.getDelta();
+        this.materialShaders.forEach((m) => {
+          m.uniforms.time.value = this.time;
+        });
+        if (this.t > 1) this.t = 0;
+        if (this.resizeCanvas) {
+          this.resizeFunction();
+        }
+        then = now - (delta % interval);
+        this.composer.render();
+      }
+    };
+  </script>
+  <script>
+    let canvas = document.getElementById("grid-canvas");
+    let grid = new GridScene(canvas, 0x161616, 0, 70);
+    grid.prepareScene(0xf55fa0, 1);
+    grid.cameraSceneTransition(0, 30, 100, 0);
+  </script>
+</div>
+<div class="hero-section wf-section">
+  <div class="hero-content">
+    <h1 class="heading">We build blockchain tech.</h1>
+    <p class="paragraph">
+      Orbit Labs is a digital agency, specializing in blockchain services. We
+      can help you leverage blockchain in your business or launch projects from
+      scratch. 
+    </p>
+    <div class="ctas">
+      <a
+        data-w-id="baede121-0833-a58b-c065-c8a0501a1fa8"
+        href="/contact/"
+        class="cta-block w-inline-block"
+      >
+        <div style="background-color: rgb(22, 22, 22)" class="div-block">
+          <div style="display: block" class="cta-text">CONTACT US.</div>
+          <div style="display: none" class="cta-text-hovercolor">
+            CONTACT US.
+          </div>
+        </div>
+      </a>
+      <a href="/services/" class="secondary-cta">OUR SERVICES</a>
+    </div>
+  </div>
+</div>

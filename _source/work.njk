@@ -1,0 +1,25 @@
+---
+layout: layout
+---      
+<!-- data is in _data/workList.json-->
+<div class="work-section wf-section">
+  <div class="work-wrapper">
+  <!-- loop work -->
+   {% if apiData.work.length > 0 %} {% for item in apiData.work %}
+      {% if item.pageName|length %} 
+        <a data-w-id="1e6c448f-9cd6-3741-6518-e10de7914ca6" href="/work/{{item.pageName}}/" class="project-card w-inline-block b" style="background-image: url('/assets/images/{{item.image}}')">
+      {% else %}
+        <a data-w-id="1e6c448f-9cd6-3741-6518-e10de7914ca6" href="{{item.href}}" target="_blank" class="project-card w-inline-block " style="background-image: url('/assets/images/{{item.image}}')">
+      {% endif %}
+      <div style="" class="project-card-overlay">
+          <div class="project-text">
+            <!--<h2 class="project-title">{{item.title}}</h2>-->
+            <div class="project-subtitle">{{item.subTitle}}</div>
+            <div class="project-summary">{{item.summary}}</div>
+          </div>
+        </div>
+      </a>
+    {% endfor %}
+    {% endif %}
+  </div>
+</div>
