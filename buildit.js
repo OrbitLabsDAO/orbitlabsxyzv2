@@ -25,14 +25,13 @@ if (fs.existsSync("./_data/api.js")) {
     try {
       getapiData = require("./_data/api.js");
       apiData = await getapiData(); // Call getapiData asynchronously
-      //console.log(apiData);
       processTemplates(); // Proceed with template processing only after data is fetched
     } catch (error) {
       console.error("Error fetching API data:", error);
     }
   })();
-
-  console.log("it");
+} else {
+  processTemplates();
 }
 
 function processTemplates() {
@@ -107,7 +106,6 @@ function processTemplates() {
         const pageData = dataArray.slice(i * size, (i + 1) * size);
 
         for (const pageItem of pageData) {
-          console.log("Page Item:", pageItem);
           const permalink = nunjucks.renderString(permalinkTemplate, {
             [alias]: pageItem,
           });
