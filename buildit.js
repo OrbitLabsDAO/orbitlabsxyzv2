@@ -10,20 +10,30 @@ const compressAssets = args.includes("compress");
 const environment = args.includes("prod") ? "production" : "local";
 
 // Load environment variables
-const getEnvConfig = require("./_data/env.js");
-const env = getEnvConfig(environment);
+//check if _data/env.js exists and not set a blank env object
+let getEnvConfig;
+let env = {};
+if (fs.existsSync("./_data/env.js")) {
+  getEnvConfig = require("./_data/env.js");
+  env = getEnvConfig(environment);
+}
 
-// Fetch API data
-const getapiData = require("./_data/api.js");
+let getapiData;
 let apiData = [];
-(async () => {
-  try {
-    apiData = await getapiData(); // Call getapiData asynchronously
-    processTemplates(); // Proceed with template processing only after data is fetched
-  } catch (error) {
-    console.error("Error fetching API data:", error);
-  }
-})();
+if (fs.existsSync("./_data/api.js")) {
+  (async () => {
+    try {
+      getapiData = require("./_data/api.js");
+      apiData = await getapiData(); // Call getapiData asynchronously
+      //console.log(apiData);
+      processTemplates(); // Proceed with template processing only after data is fetched
+    } catch (error) {
+      console.error("Error fetching API data:", error);
+    }
+  })();
+
+  console.log("it");
+}
 
 function processTemplates() {
   const sourceFolder = "./_source";
@@ -95,12 +105,15 @@ function processTemplates() {
       const totalPages = Math.ceil(dataArray.length / size);
       for (let i = 0; i < totalPages; i++) {
         const pageData = dataArray.slice(i * size, (i + 1) * size);
+
         for (const pageItem of pageData) {
+          console.log("Page Item:", pageItem);
           const permalink = nunjucks.renderString(permalinkTemplate, {
             [alias]: pageItem,
           });
 
           // Render content for this page
+
           const pageContent = nunjucks.renderString(layout, {
             ...env,
             content: pageItem, // Pass pageItem as 'content'
@@ -169,15 +182,19 @@ function processTemplates() {
           const content = parsed.content;
           const frontMatter = parsed.data;
 
-          // Debug output for front matter
+          //Debug output for front matter
           //console.log("Front Matter:", frontMatter);
 
           let finalContent;
 
           if (frontMatter.layout) {
+            //check ig frontMatter.layout has a .njk and if it does do not add it to the end
+            if (!frontMatter.layout.includes(".njk")) {
+              frontMatter.layout = frontMatter.layout + ".njk";
+            }
             const layoutFilePath = path.join(
               includesFolder,
-              frontMatter.layout + ".njk"
+              frontMatter.layout
             );
             const layoutData = await fs.promises.readFile(
               layoutFilePath,
@@ -199,6 +216,7 @@ function processTemplates() {
           }
 
           // Check for pagination
+
           if (frontMatter.pagination) {
             const paginationData = eval(frontMatter.pagination.data); // Consider safer alternatives if possible
             const size = frontMatter.pagination.size || 1;
