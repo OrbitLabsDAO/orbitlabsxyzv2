@@ -1,0 +1,25 @@
+---
+layout: layout
+---
+
+<div class="services-section wf-section">
+  <div class="services-content">
+    <div class="div-block-6">
+      {% if apiData.services.length > 0 %} {% for item in apiData.services %}
+      <h2 class="{{ item.className }}">{{ item.title }}</h2>
+      {% endfor %} {% else %}
+      <li>No Services available.</li>
+      {% endif %}
+    </div>
+    <a
+      data-w-id="815504f5-2fc8-5b7f-37f6-949e90ca8c93"
+      href="/contact/"
+      class="cta-block w-inline-block"
+    >
+      <div class="div-block">
+        <div class="cta-text">CONTACT US.</div>
+        <div class="cta-text-hovercolor">CONTACT US.</div>
+      </div>
+    </a>
+  </div>
+</div>

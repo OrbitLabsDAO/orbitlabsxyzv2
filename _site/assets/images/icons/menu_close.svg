@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="29px" height="29px" viewBox="0 0 29 29" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Group</title>
+    <g id="ORBIT-LABS" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="square">
+        <g id="MOBILE-MENU" transform="translate(-334.000000, -31.000000)" stroke="#979797" stroke-width="2">
+            <g id="Group" transform="translate(335.772078, 32.772078)">
+                <line x1="1.23989707e-12" y1="8.38440428e-13" x2="25.4558441" y2="25.4558441" id="Line"></line>
+                <line x1="0" y1="25.4558441" x2="25.4558441" y2="0" id="Line-Copy"></line>
+            </g>
+        </g>
+    </g>
+</svg>

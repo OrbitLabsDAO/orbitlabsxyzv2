@@ -1,0 +1,53 @@
+---
+layout: layout
+pagination:
+  data: apiData
+  size: 1
+  alias: contentarray
+permalink: /work/{{ contentarray.pageName }}/
+outputFolder: /
+---
+
+<section class="project-section mt-5">
+  <div class="container">
+    <div class="project-form">
+      <h3 class="text-white font-me">{{ content.title }}</h3>
+      <div class="project-img">
+        <img src="/assets/images/{{ content.image }}" class="img-responsive" alt="" />
+      </div>
+      <div class="d-flex justify-content-between align-items-center mt-2 bbi-heading-btn">
+        <h3 class="font-me text-white">{{ content.subTitle }}</h3>
+        <div class="text-right">
+          {% if content.href %}
+            <a class="btn theme-btn font-me" href="{{ content.href }}" target="_blank">
+              <img src="/assets/images/icons/web.svg" alt="" />
+              <span>VISIT SITE</span>
+            </a>
+          {% endif %}
+          {% if content.code %}
+            <a class="btn theme-btn font-me" href="{{ content.code }}" target="_blank">
+              <img src="/assets/images/icons/code.svg" alt="" />
+              <span>VIEW CODE</span>
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="text-white">
+      <hr class="theme-line" />
+      <p class="font-poppins">
+       
+          <h2>{{ content.title }}</h2>
+          <p>{{ content.content | safe | escape | nl2br }}</p>
+       
+      </p>
+    </div>
+
+    <div class="back-btn mb-5">
+      <a class="text-white btn font-poppins" href="/work">
+        <img src="/assets/images/icons/left_arrow.svg" alt="" /> BACK TO OUR WORK
+      </a>
+    </div>
+  </div>
+</section>
