@@ -15,9 +15,9 @@ echo "Starting build script"
 
 # always delete
 # if [[ "$@" == *"delete"* ]]; then
-echo "Deleting _site folder..."
-rm -rf _site
-echo "✅ _site folder deleted."
+##echo "Deleting _site folder..."
+#rm -rf _site
+##echo "✅ _site folder deleted."
 # fi
 
 # Execute the build script with any arguments passed to this script
