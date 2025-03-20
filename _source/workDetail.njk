@@ -1,7 +1,7 @@
 ---
 layout: layout
 pagination:
-  data: apiData
+  data: apiData.work
   size: 1
   alias: contentarray
 permalink: /work/{{ contentarray.pageName }}/
@@ -18,8 +18,8 @@ outputFolder: /
       <div class="d-flex justify-content-between align-items-center mt-2 bbi-heading-btn">
         <h3 class="font-me text-white">{{ content.subTitle }}</h3>
         <div class="text-right">
-          {% if content.href %}
-            <a class="btn theme-btn font-me" href="{{ content.href }}" target="_blank">
+          {% if content.url %}
+            <a class="btn theme-btn font-me" href="{{ content.url }}" target="_blank">
               <img src="/assets/images/icons/web.svg" alt="" />
               <span>VISIT SITE</span>
             </a>
@@ -39,7 +39,7 @@ outputFolder: /
       <p class="font-poppins">
        
           <h2>{{ content.title }}</h2>
-          <p>{{ content.content | safe | escape | nl2br }}</p>
+          <p>{{ content.body | safe | escape | nl2br }}</p>
        
       </p>
     </div>
