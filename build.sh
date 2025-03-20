@@ -13,12 +13,12 @@ start_time=$(get_current_time_in_ms)
 
 echo "Starting build script"
 
-# Check if 'delete' is passed as an argument
-if [[ "$@" == *"delete"* ]]; then
+# always delete
+# if [[ "$@" == *"delete"* ]]; then
     echo "Deleting _site folder..."
     rm -rf _site
     echo "✅ _site folder deleted."
-fi
+# fi
 
 # Execute the build script with any arguments passed to this script
 node buildit.js "$@"
