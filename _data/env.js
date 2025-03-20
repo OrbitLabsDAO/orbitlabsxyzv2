@@ -3,17 +3,18 @@ let _YEAR = todaysDate.getFullYear();
 
 const commonConfig = {
   YEAR: _YEAR,
-  CMSURL: "https://cms.orbitlabs.xyz/api/v1/",
 };
 
 const envConfigs = {
   local: {
     ...commonConfig,
     ENVIRONMENT: "local",
+    CMSURL: "http://localhost:4321/api/v1/",
   },
   production: {
     ...commonConfig,
     ENVIRONMENT: "production",
+    CMSURL: "https://cms.orbitlabs.xyz/api/v1/",
   },
 };
 

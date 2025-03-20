@@ -11,7 +11,7 @@ layout: layout
             <div class="project-text">
               <!--<h2 class="project-title">{{item.title}}</h2>-->
               <div class="project-subtitle">{{ item.title }}</div>
-              <div class="project-summary">{{ item.body }}</div>
+              <div class="project-summary">{{ item.summary | safe | escape | nl2br }}</div>
             </div>
           </div>
         </a>
