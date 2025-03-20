@@ -6,7 +6,7 @@ layout: layout
   <div class="services-content">
     <div class="div-block-6">
       {% if apiData.services.length > 0 %} {% for item in apiData.services %}
-      <h2 class="{{ item.className }}">{{ item.title }}</h2>
+      <h2 class="{{ item.className }}">{{ item.service }}</h2>
       {% endfor %} {% else %}
       <li>No Services available.</li>
       {% endif %}
